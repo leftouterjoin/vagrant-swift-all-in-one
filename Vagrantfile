@@ -54,13 +54,13 @@ local_config = {
   "nodes" => Integer(ENV['NODES'] || 4),
   "disks" => Integer(ENV['DISKS'] || 4),
   "ec_disks" => Integer(ENV['EC_DISKS'] || 8),
-  "swift_repo" => (ENV['SWIFT_REPO'] || 'git://github.com/openstack/swift.git'),
+  "swift_repo" => (ENV['SWIFT_REPO'] || 'https://github.com/openstack/swift.git'),
   "swift_repo_branch" => (ENV['SWIFT_REPO_BRANCH'] || 'master'),
-  "swiftclient_repo" => (ENV['SWIFTCLIENT_REPO'] || 'git://github.com/openstack/python-swiftclient.git'),
+  "swiftclient_repo" => (ENV['SWIFTCLIENT_REPO'] || 'https://github.com/openstack/python-swiftclient.git'),
   "swiftclient_repo_branch" => (ENV['SWIFTCLIENT_REPO_BRANCH'] || 'master'),
-  "swift_bench_repo" => (ENV['SWIFTBENCH_REPO'] || 'git://github.com/openstack/swift-bench.git'),
+  "swift_bench_repo" => (ENV['SWIFTBENCH_REPO'] || 'https://github.com/openstack/swift-bench.git'),
   "swift_bench_repo_branch" => (ENV['SWIFTBENCH_REPO_BRANCH'] || 'master'),
-  "swift_specs_repo" => (ENV['SWIFTSPECS_REPO'] || 'git://github.com/openstack/swift-specs.git'),
+  "swift_specs_repo" => (ENV['SWIFTSPECS_REPO'] || 'https://github.com/openstack/swift-specs.git'),
   "swift_specs_repo_branch" => (ENV['SWIFTSPECS_REPO_BRANCH'] || 'master'),
   "extra_key" => (ENV['EXTRA_KEY'] || ''),
   "source_root" => (ENV['SOURCE_ROOT'] || '/vagrant'),
@@ -68,6 +68,13 @@ local_config = {
 
 
 Vagrant.configure("2") do |global_config|
+  if Vagrant.has_plugin?("vagrant-proxyconf")
+    global_config.proxy.http = "http://10.43.110.94:3128"
+    global_config.proxy.https = "http://10.43.110.94:3128"
+    global_config.proxy.no_proxy = "localhost,127.0.0.1"
+#    global_config.git_proxy.http = "http://10.43.110.94:3128"
+#    global_config.git_proxy.https = "http://10.43.110.94:3128"
+  end
   global_config.ssh.forward_agent = true
   hosts.each do |vm_name, ip|
     global_config.vm.define vm_name do |config|
@@ -89,6 +96,7 @@ Vagrant.configure("2") do |global_config|
           vb.gui = true
         end
       end
+#      config.omnibus.chef_version = "11.14.6"
       config.vm.provision :chef_solo do |chef|
         chef.add_recipe "swift"
         chef.json = local_config
